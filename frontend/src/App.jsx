@@ -7,77 +7,65 @@ function App() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(false);
+  const [contacts, setContacts] = useState([]); // [{ email, company }]
 
   const handleXLSX = (e) => {
-    try {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const data = new Uint8Array(event.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-          
-          // Filter out empty rows and invalid emails
-          const validEmails = jsonData
-            .flat() // Flatten the array to handle multiple columns
-            .filter(email => 
-              email && 
-              typeof email === 'string' && 
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-            )
-            .map(email => email.trim());
-
-          setEmails(validEmails);
-          if (validEmails.length === 0) {
-            alert('No valid email addresses found in the file');
-          } else {
-            alert(`Successfully loaded ${validEmails.length} email addresses`);
-          }
-        } catch (error) {
-          console.error('Error processing file:', error);
-          alert('Error processing the Excel file. Please check the format.');
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      console.error('Error reading file:', error);
-      alert('Error reading the file. Please try again.');
-    }
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 0 }); // key-based
+  
+      const extracted = jsonData
+        .filter(row => row['Email Id'] && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['Email Id']))
+        .map(row => ({
+          email: row['Email Id'].trim(),
+          company: row['Company Name']?.trim() || '',
+          name: row['Name']?.trim() || ''
+        }));
+  
+      setContacts(extracted);
+      if (extracted.length === 0) {
+        alert('No valid contacts with emails found.');
+      } else {
+        alert(`Loaded ${extracted.length} valid contacts`);
+      }
+    };
+    reader.readAsArrayBuffer(file);
   };
+  
 
   const sendEmails = async () => {
-    if (emails.length === 0) {
-      alert('Please upload a file with valid email addresses first');
-      return;
-    }
-    if (!subject.trim()) {
-      alert('Please enter an email subject');
-      return;
-    }
-    if (!body.trim()) {
-      alert('Please enter an email body');
-      return;
-    }
-
+    if (contacts.length === 0) return alert("Upload contact file first.");
+    if (!subject.trim() || !body.trim()) return alert("Subject and body required");
+  
     setLoading(true);
     try {
+      const personalizedMessages = contacts.map(({ email, company, name }) => ({
+        to: email,
+        subject,
+        body: body
+          .replace(/{{name}}/gi, name || "there")
+          .replace(/{{company}}/gi, company || "your company")
+      }));
+  
       const res = await axios.post('http://localhost:5000/send', {
-        recipients: emails,
-        subject: subject.trim(),
-        body: body.trim()
+        messages: personalizedMessages
       });
+  
       alert(res.data.message);
     } catch (err) {
-      console.error('Error sending emails:', err);
-      alert(err.response?.data?.message || "Failed to send emails. Please try again.");
+      console.error(err);
+      alert("Error sending emails.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white p-10 w-full">

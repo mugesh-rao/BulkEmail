@@ -9,7 +9,7 @@ app.use(express.json());
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-
+ 
 });
 
 // Verify the transporter connection
