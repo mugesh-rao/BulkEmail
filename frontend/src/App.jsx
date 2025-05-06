@@ -80,19 +80,19 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-600 to-purple-700 p-10">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white p-10 w-full">
       <header className="text-center mb-12">
-        <h1 className="text-6xl font-extrabold text-white mb-4">Transform Your Email Outreach</h1>
-        <p className="text-lg text-gray-200">Effortlessly upload your contacts and send personalized emails in seconds.</p>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Email Outreach Tool</h1>
+        <p className="text-md text-gray-600">Easily upload your contacts and send personalized emails efficiently.</p>
       </header>
-      <div className="bg-white shadow-lg rounded-lg p-10 w-full max-w-xl transition-transform transform hover:scale-105">
+      <div className="bg-gray-50 shadow-md rounded-lg p-10 w-full max-w-xl">
         <div className="mb-6">
           <label className="block text-gray-700 font-semibold mb-2">Upload XLSX</label>
           <input 
             type="file" 
             accept=".xlsx" 
             onChange={handleXLSX} 
-            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
         <div className="mb-6">
@@ -102,7 +102,7 @@ function App() {
             placeholder="Enter Subject"
             value={subject}
             onChange={e => setSubject(e.target.value)}
-            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
         <div className="mb-6">
@@ -112,7 +112,7 @@ function App() {
             rows={6}
             value={body}
             onChange={e => setBody(e.target.value)}
-            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded p-3 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
         <div className="mb-6">
@@ -128,10 +128,10 @@ function App() {
         <button 
           onClick={sendEmails} 
           disabled={loading || emails.length === 0}
-          className={`w-full py-3 px-6 rounded font-bold text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500
+          className={`w-full py-3 px-6 rounded font-bold text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500
             ${loading || emails.length === 0 
               ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700'}`}
+              : 'bg-gray-800 hover:bg-gray-700'}`}
         >
           {loading 
             ? 'Sending...' 
@@ -140,8 +140,8 @@ function App() {
               : `Send ${emails.length} Emails`}
         </button>
       </div>
-      <footer className="mt-10 text-gray-300 text-sm text-center">
-        <p>Secure and reliable email delivery powered by our trusted service.</p>
+      <footer className="mt-10 text-gray-600 text-sm text-center">
+        <p>Reliable email delivery powered by our trusted service.</p>
       </footer>
     </div>
   );
