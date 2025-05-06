@@ -10,7 +10,8 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-
+    user: "mugeshraoego@gmail.com",
+    pass: "apwq adgp jktz ngvb",
   },
 });
 
@@ -46,24 +47,16 @@ app.post('/send', async (req, res) => {
     for (const to of recipients) {
       try {
         await transporter.sendMail({
-          from: '"MERN Sender" <mugeshraoego@gmail.com>',
+          from: '"Mugesh Rao" <mugeshraoego@gmail.com>',
           to,
           subject,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-              <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
-                ${body}
-              </div>
-              <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
-                Sent via Bulk Email Sender
-              </div>
-            </div>
-          `
+          text: body
         });
         successCount++;
         
         // Add a small delay between emails to prevent rate limiting
         await delay(100);
+        console.log(`Email sent to ${to}`);
       } catch (emailError) {
         console.error(`Failed to send email to ${to}:`, emailError);
         failedEmails.push({ email: to, error: emailError.message });
