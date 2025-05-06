@@ -3,23 +3,22 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 
 function App() {
-  const [emails, setEmails] = useState([]);
+  const [contacts, setContacts] = useState([]); // [{ email, company, name }]
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(false);
-  const [contacts, setContacts] = useState([]); // [{ email, company }]
 
   const handleXLSX = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 0 }); // key-based
-  
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 0 });
+
       const extracted = jsonData
         .filter(row => row['Email Id'] && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['Email Id']))
         .map(row => ({
@@ -27,7 +26,7 @@ function App() {
           company: row['Company Name']?.trim() || '',
           name: row['Name']?.trim() || ''
         }));
-  
+
       setContacts(extracted);
       if (extracted.length === 0) {
         alert('No valid contacts with emails found.');
@@ -37,12 +36,11 @@ function App() {
     };
     reader.readAsArrayBuffer(file);
   };
-  
 
   const sendEmails = async () => {
     if (contacts.length === 0) return alert("Upload contact file first.");
     if (!subject.trim() || !body.trim()) return alert("Subject and body required");
-  
+
     setLoading(true);
     try {
       const personalizedMessages = contacts.map(({ email, company, name }) => ({
@@ -52,20 +50,18 @@ function App() {
           .replace(/{{name}}/gi, name || "there")
           .replace(/{{company}}/gi, company || "your company")
       }));
-  
+
       const res = await axios.post('http://localhost:5000/send', {
         messages: personalizedMessages
       });
-  
+
       alert(res.data.message);
     } catch (err) {
       console.error(err);
-      alert("Error sending emails.");
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white p-10 w-full">
@@ -104,28 +100,28 @@ function App() {
           />
         </div>
         <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Extracted Emails ({emails.length})</h2>
+          <h2 className="text-lg font-semibold mb-2">Extracted Contacts ({contacts.length})</h2>
           <div className="max-h-40 overflow-y-auto">
             <ul className="list-disc pl-5">
-              {emails.map((email, index) => (
-                <li key={index} className="text-gray-700">{email}</li>
+              {contacts.map((contact, index) => (
+                <li key={index} className="text-gray-700">{contact.email}</li>
               ))}
             </ul>
           </div>
         </div>
         <button 
           onClick={sendEmails} 
-          disabled={loading || emails.length === 0}
+          disabled={loading || contacts.length === 0}
           className={`w-full py-3 px-6 rounded font-bold text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500
-            ${loading || emails.length === 0 
+            ${loading || contacts.length === 0 
               ? 'bg-gray-400 cursor-not-allowed' 
               : 'bg-gray-800 hover:bg-gray-700'}`}
         >
           {loading 
             ? 'Sending...' 
-            : emails.length === 0 
+            : contacts.length === 0 
               ? 'Upload Excel File First'
-              : `Send ${emails.length} Emails`}
+              : `Send ${contacts.length} Emails`}
         </button>
       </div>
       <footer className="mt-10 text-gray-600 text-sm text-center">

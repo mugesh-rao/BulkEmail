@@ -9,7 +9,10 @@ app.use(express.json());
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
- 
+  auth: {
+    user: "mugeshraoego@gmail.com",
+    pass: "apwq adgp jktz ngvb",
+  },
 });
 
 // Verify the transporter connection
@@ -28,12 +31,16 @@ app.post('/send', async (req, res) => {
 
   // Input validation
   if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    console.log(recipients, "recipients")
     return res.status(400).json({ message: 'Recipients list is required and must not be empty' });
+
   }
   if (!subject || !subject.trim()) {
+    console.log(subject, "subject")
     return res.status(400).json({ message: 'Subject is required' });
   }
   if (!body || !body.trim()) {
+    console.log(body, "body")
     return res.status(400).json({ message: 'Email body is required' });
   }
 
@@ -81,5 +88,5 @@ app.post('/send', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT =  5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
