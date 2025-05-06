@@ -1,18 +1,75 @@
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Initialize OpenAI
+const openai = new OpenAI({
+});
+
+// Email configuration
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: "mugeshraoego@gmail.com",
   },
 });
+
+// Agent definitions
+const agents = {
+  english: {
+    name: "English Assistant",
+    instructions: "You are a helpful assistant that communicates in English. Keep responses professional and concise.",
+    async process(message) {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: this.instructions },
+          { role: "user", content: message }
+        ],
+      });
+      return completion.choices[0].message.content;
+    }
+  },
+
+  spanish: {
+    name: "Spanish Assistant",
+    instructions: "Eres un asistente útil que se comunica en español. Mantén las respuestas profesionales y concisas.",
+    async process(message) {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: this.instructions },
+          { role: "user", content: message }
+        ],
+      });
+      return completion.choices[0].message.content;
+    }
+  },
+
+  triage: {
+    name: "Triage Assistant",
+    instructions: "You are a language detection and routing assistant. Determine if the input is in English or Spanish and route accordingly.",
+    async process(message) {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { 
+            role: "system", 
+            content: "Detect the language of the input and respond with either 'english' or 'spanish'. Only respond with one word." 
+          },
+          { role: "user", content: message }
+        ],
+      });
+      return completion.choices[0].message.content.toLowerCase();
+    }
+  }
+};
 
 // Verify the transporter connection
 transporter.verify(function(error, success) {
@@ -138,6 +195,34 @@ app.post('/send', async (req, res) => {
         error: err.message 
       });
     }
+  }
+});
+
+app.post('/ask', async (req, res) => {
+  const { message } = req.body;
+  
+  try {
+    // First, detect the language using triage agent
+    const language = await agents.triage.process(message);
+    
+    // Route to appropriate agent
+    let response;
+    if (language === 'spanish') {
+      response = await agents.spanish.process(message);
+    } else {
+      response = await agents.english.process(message);
+    }
+
+    res.json({ 
+      output: response,
+      language: language 
+    });
+  } catch (err) {
+    console.error('Agent error:', err);
+    res.status(500).json({ 
+      error: 'Failed to process request',
+      details: err.message 
+    });
   }
 });
 
