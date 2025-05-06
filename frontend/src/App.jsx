@@ -20,9 +20,9 @@ function App() {
       const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 0 });
 
       const extracted = jsonData
-        .filter(row => row['Email Id'] && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['Email Id']))
+        .filter(row => row['Email'] && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row['Email']))
         .map(row => ({
-          email: row['Email Id'].trim(),
+          email: row['Email'].trim(),
           company: row['Company Name']?.trim() || '',
           name: row['Name']?.trim() || ''
         }));
@@ -58,6 +58,14 @@ function App() {
       alert(res.data.message);
     } catch (err) {
       console.error(err);
+      // Display more specific error message
+      if (err.response) {
+        alert(`Error: ${err.response.data.message || 'Failed to send emails'}`);
+      } else if (err.request) {
+        alert("Error: Server did not respond. Please check if the server is running.");
+      } else {
+        alert(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
