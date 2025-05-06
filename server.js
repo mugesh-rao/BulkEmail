@@ -17,6 +17,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: "mugeshraoego@gmail.com",
+    pass: "apwq adgp jktz ngvb",
   },
 });
 
@@ -27,7 +28,7 @@ const agents = {
     instructions: "You are a helpful assistant that communicates in English. Keep responses professional and concise.",
     async process(message) {
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [
           { role: "system", content: this.instructions },
           { role: "user", content: message }
@@ -42,7 +43,7 @@ const agents = {
     instructions: "Eres un asistente útil que se comunica en español. Mantén las respuestas profesionales y concisas.",
     async process(message) {
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [
           { role: "system", content: this.instructions },
           { role: "user", content: message }
@@ -57,7 +58,7 @@ const agents = {
     instructions: "You are a language detection and routing assistant. Determine if the input is in English or Spanish and route accordingly.",
     async process(message) {
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-nano",
         messages: [
           { 
             role: "system", 
